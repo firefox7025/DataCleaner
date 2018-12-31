@@ -1,0 +1,10 @@
+[package]
+name = "image_sorter"
+version = "0.1.0"
+authors = ["amontgomery"]
+edition = "2015"
+
+[dependencies]
+img_hash = "2.1.0"
+clap = "2.32.0"
+rustfix = "0.4.4"
