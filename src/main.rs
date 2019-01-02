@@ -7,6 +7,7 @@ mod image_finders;
 mod hasher;
 
 use std::path::Path;
+use std::path::PathBuf;
 use clap::{Arg, App};
 use std::fs;
 use simplelog::*;
@@ -17,6 +18,12 @@ use rayon::prelude::*;
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 const NAME: &'static str = env!("CARGO_PKG_NAME");
+
+
+struct ImageHashCombo {
+    hash: img_hash::ImageHash,
+    path: PathBuf,
+}
 
 fn main() {
     let matches = App::new(NAME)
@@ -53,10 +60,11 @@ fn main() {
 
     // more program logic goes here..
     let images = image_finders::find_images(_input_path);
-    let _a: Vec<_> = images.par_iter()
-        .map(|e| hasher::hash_image(e.to_path_buf(), _hash_type))
+    let imageHashCombos: Vec<_> = images.par_iter()
+        .map(|e| ImageHashCombo { hash: hasher::hash_image(e.to_path_buf(), _hash_type), path: e.to_path_buf()})
         .collect();
-    info!("total number of hashes found {:?}", _a);
+    info!("Completed hashing.");
+    println!("Checking the number of imageHashCombos {}", imageHashCombos.len());
 }
 
 fn determine_hash(args: &clap::ArgMatches) -> img_hash::HashType {

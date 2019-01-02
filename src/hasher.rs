@@ -6,6 +6,6 @@ use img_hash::{ImageHash, HashType};
 
 pub fn hash_image(image: PathBuf, algorithim: HashType) -> img_hash::ImageHash {
     let image = image::open(image).unwrap();
-    let hash1 = ImageHash::hash(&image, 8, algorithim);
+    let hash1 = ImageHash::hash(&image, 16, algorithim);
     return hash1;
 }

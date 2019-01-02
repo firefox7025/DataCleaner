@@ -16,7 +16,7 @@ pub fn find_images(_input_dir: &Path) -> HashSet<PathBuf> {
             _ => false,
         };
     }
-    }
+ }
     info!("found {} images to sort", paths.len());
     return paths;
 }
