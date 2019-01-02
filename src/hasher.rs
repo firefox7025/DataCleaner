@@ -1,0 +1,11 @@
+extern crate image;
+extern crate img_hash;
+
+use std::path::PathBuf;
+use img_hash::{ImageHash, HashType};
+
+pub fn hash_image(image: PathBuf, algorithim: HashType) -> img_hash::ImageHash {
+    let image = image::open(image).unwrap();
+    let hash1 = ImageHash::hash(&image, 8, algorithim);
+    return hash1;
+}

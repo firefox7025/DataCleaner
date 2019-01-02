@@ -1,16 +1,18 @@
 extern crate clap;
 #[macro_use] extern crate log;
 extern crate simplelog;
+extern crate img_hash;
 
-mod sorttype;
 mod image_finders;
+mod hasher;
 
 use std::path::Path;
 use clap::{Arg, App};
 use std::fs;
 use simplelog::*;
 use std::fs::File;
-
+use img_hash::HashType;
+use rayon::prelude::*;
 
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -46,24 +48,23 @@ fn main() {
     let _input_path = Path::new(matches.value_of("INPUT").unwrap());
     let _hash_type = determine_hash(&matches);
     create_log_file(&_logfile);
-    info!("This only appears in the log file");
+    info!("Arguments parsed input location {:?}, output location {:?}, hashtype {:?}", &_input_path, &_output_path, &_hash_type);
     let _output_pre_check = prep_output(_output_path);
 
-
-
-
     // more program logic goes here..
-
-    image_finders::find_images(_input_path);
-
+    let images = image_finders::find_images(_input_path);
+    let _a: Vec<_> = images.par_iter()
+        .map(|e| hasher::hash_image(e.to_path_buf(), _hash_type))
+        .collect();
+    info!("total number of hashes found {:?}", _a);
 }
 
-fn determine_hash(args: &clap::ArgMatches) -> sorttype::Hash {
+fn determine_hash(args: &clap::ArgMatches) -> img_hash::HashType {
     match args.occurrences_of("v") {
-        0 => sorttype::Hash::Mean,
-        1 => sorttype::Hash::Gradient,
-        2 => sorttype::Hash::DCT,
-        3 | _ => sorttype::Hash::DCT,
+        0 => HashType::Mean,
+        1 => HashType::Gradient,
+        2 => HashType::DCT,
+        3 | _ => HashType::DCT,
     }
 }
 
