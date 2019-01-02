@@ -60,11 +60,10 @@ fn main() {
 
     // more program logic goes here..
     let images = image_finders::find_images(_input_path);
-    let imageHashCombos: Vec<_> = images.par_iter()
+    let image_hash_combos: Vec<_> = images.par_iter()
         .map(|e| ImageHashCombo { hash: hasher::hash_image(e.to_path_buf(), _hash_type), path: e.to_path_buf()})
         .collect();
     info!("Completed hashing.");
-    println!("Checking the number of imageHashCombos {}", imageHashCombos.len());
 }
 
 fn determine_hash(args: &clap::ArgMatches) -> img_hash::HashType {

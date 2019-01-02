@@ -9,3 +9,7 @@ pub fn hash_image(image: PathBuf, algorithim: HashType) -> img_hash::ImageHash {
     let hash1 = ImageHash::hash(&image, 16, algorithim);
     return hash1;
 }
+
+pub fn diff(hash1: ImageHash, hash2: ImageHash) -> f32 {
+    return hash1.dist_ratio(&hash2);
+}
