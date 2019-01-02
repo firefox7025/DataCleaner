@@ -2,9 +2,12 @@
 name = "image_sorter"
 version = "0.1.0"
 authors = ["amontgomery"]
-edition = "2015"
+edition = "2018"
 
 [dependencies]
 img_hash = "2.1.0"
 clap = "2.32.0"
 rustfix = "0.4.4"
+log = "0.4"
+simplelog = "0.5.3"
+glob = "0.2"

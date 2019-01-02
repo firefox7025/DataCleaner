@@ -1,10 +1,23 @@
 extern crate clap;
+#[macro_use] extern crate log;
+extern crate simplelog;
+
+mod sorttype;
+mod image_finders;
+
+use std::path::Path;
 use clap::{Arg, App};
+use std::fs;
+use simplelog::*;
+use std::fs::File;
+
+
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+const NAME: &'static str = env!("CARGO_PKG_NAME");
 
 fn main() {
-    let matches = App::new("Image Sorter")
+    let matches = App::new(NAME)
                           .version(VERSION)
                           .author("Alexander Montgomery <alexander.montgomery@ultimaengineering.io>")
                           .about("Sorts data into common folders via Hashes")
@@ -22,39 +35,48 @@ fn main() {
              .help("Sets the output folder to use")
              .required(true)
              .index(2))
+        .arg(Arg::with_name("v")
+              .short("v")
+              .multiple(true)
+              .help("Sets the margin of error for docs to be sorted together"))
+        .get_matches();
 
-                          .arg(Arg::with_name("v")
-                               .short("v")
-                               .multiple(true)
-                               .help("Sets the margin of error for docs to be sorted together"))
-                          .get_matches();
+    let _logfile = matches.value_of("logFile").unwrap_or("log.txt");
+    let _output_path  = Path::new(matches.value_of("OUTPUT").unwrap());
+    let _input_path = Path::new(matches.value_of("INPUT").unwrap());
+    let _hash_type = determine_hash(&matches);
+    create_log_file(&_logfile);
+    info!("This only appears in the log file");
+    let _output_pre_check = prep_output(_output_path);
 
-    // Gets a value for config if supplied by user, or defaults to "default.conf"
-    let logfile = matches.value_of("config").unwrap_or("log.txt");
-    println!("Value for config: {}", logfile);
 
-    // Calling .unwrap() is safe here because "INPUT" is required (if "INPUT" wasn't
-    // required we could have used an 'if let' to conditionally get the value)
-    println!("Using input file: {}", matches.value_of("INPUT").unwrap());
 
-    // Vary the output based on how many times the user used the "verbose" flag
-    // (i.e. 'myprog -v -v -v' or 'myprog -vvv' vs 'myprog -v'
-    match matches.occurrences_of("v") {
-        0 => println!("No verbose info"),
-        1 => println!("Some verbose info"),
-        2 => println!("Tons of verbose info"),
-        3 | _ => println!("Don't be crazy"),
+
+    // more program logic goes here..
+
+    image_finders::find_images(_input_path);
+
+}
+
+fn determine_hash(args: &clap::ArgMatches) -> sorttype::Hash {
+    match args.occurrences_of("v") {
+        0 => sorttype::Hash::Mean,
+        1 => sorttype::Hash::Gradient,
+        2 => sorttype::Hash::DCT,
+        3 | _ => sorttype::Hash::DCT,
     }
+}
 
-    // You can handle information about subcommands by requesting their matches by name
-    // (as below), requesting just the name used, or both at the same time
-    if let Some(matches) = matches.subcommand_matches("test") {
-        if matches.is_present("debug") {
-            println!("Printing debug info...");
-        } else {
-            println!("Printing normally...");
-        }
-    }
+fn prep_output(output: &Path) -> std::io::Result<()> {
+    fs::create_dir_all(output)?;
+    Ok(())
+}
 
-    // more program logic goes here...
+fn create_log_file(log: &str) {
+    CombinedLogger::init(
+        vec![
+            TermLogger::new(LevelFilter::Warn, Config::default()).unwrap(),
+            WriteLogger::new(LevelFilter::Info, Config::default(), File::create(log).unwrap()),
+        ]
+    ).unwrap();
 }
